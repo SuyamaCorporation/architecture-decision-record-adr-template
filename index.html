@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Architecture Decision Record (ADR) Template</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    textarea { resize: vertical; }
+    .status-draft { background: #fef3c7; color: #92400e; }
+    .status-proposed { background: #dbeafe; color: #1e40af; }
+    .status-accepted { background: #dcfce7; color: #166534; }
+    .status-deprecated { background: #fee2e2; color: #991b1b; }
+    .status-superseded { background: #f3f4f6; color: #374151; }
+    @media print { .no-print { display: none !important; } body { background: white; } }
+    .fade-in { animation: fadeIn 0.2s ease; }
+    @keyframes fadeIn { from { opacity:0; transform: translateY(6px); } to { opacity:1; transform:none; } }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 via-white to-blue-50 min-h-screen font-sans">
+  <header class="bg-white shadow-sm sticky top-0 z-10 no-print">
+    <div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <span class="text-3xl" aria-hidden="true">🏗️</span>
+        <div>
+          <h1 class="text-xl font-bold text-gray-900">Architecture Decision Record (ADR) Template</h1>
+          <p class="text-sm text-gray-500">Document software architecture decisions in a structured format</p>
+        </div>
+      </div>
+      <div class="flex gap-2">
+        <button id="viewPreviewBtn" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-blue-400 no-print" aria-label="Preview ADR">Preview</button>
+        <button id="viewEditBtn" class="bg-blue-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-blue-400 no-print" aria-label="Edit ADR">Edit</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-4xl mx-auto px-4 py-8" role="main">
+    <!-- Toolbar -->
+    <div class="flex flex-wrap gap-3 mb-6 no-print" role="toolbar" aria-label="ADR actions">
+      <button id="saveBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-blue-400" aria-label="Save ADR">Save</button>
+      <button id="loadBtn" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-gray-400" aria-label="Load saved ADR">Load</button>
+      <button id="newBtn" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-gray-400" aria-label="New blank ADR">New</button>
+      <button id="printBtn" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-gray-400 no-print" aria-label="Print ADR">Print</button>
+      <select id="loadSelect" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none" aria-label="Saved ADR list">
+        <option value="">Select saved ADR...</option>
+      </select>
+      <span id="saveMsg" class="text-sm text-gray-400 self-center"></span>
+    </div>
+
+    <!-- EDIT VIEW -->
+    <div id="editView">
+      <!-- Header -->
+      <section class="bg-white rounded-2xl shadow-md p-6 mb-5" aria-label="ADR header information">
+        <h2 class="font-bold text-blue-700 mb-4">ADR Header</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1" for="adrNumber">ADR Number</label>
+            <input id="adrNumber" type="text" placeholder="ADR-001" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none text-sm" aria-label="ADR number" />
+          </div>
+          <div class="sm:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 mb-1" for="adrTitle">Title *</label>
+            <input id="adrTitle" type="text" placeholder="e.g. Use PostgreSQL as primary datastore" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none text-sm" aria-required="true" aria-label="ADR title" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1" for="adrDate">Date</label>
+            <input id="adrDate" type="date" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none text-sm" aria-label="ADR date" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1" for="adrStatus">Status</label>
+            <select id="adrStatus" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none text-sm" aria-label="ADR status">
+              <option value="draft">Draft</option>
+              <option value="proposed">Proposed</option>
+              <option value="accepted" selected>Accepted</option>
+              <option value="deprecated">Deprecated</option>
+              <option value="superseded">Superseded</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1" for="adrDeciders">Deciders</label>
+            <input id="adrDeciders" type="text" placeholder="Alice, Bob, Carol" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none text-sm" aria-label="ADR deciders" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1" for="adrTags">Tags</label>
+            <input id="adrTags" type="text" placeholder="database, backend, security" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none text-sm" aria-label="ADR tags, comma separated" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1" for="adrSupersedes">Supersedes</label>
+            <input id="adrSupersedes" type="text" placeholder="ADR-000 (if applicable)" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none text-sm" aria-label="ADR this supersedes" />
+          </div>
+        </div>
+      </section>
+
+      <!-- Context -->
+      <section class="bg-white rounded-2xl shadow-md p-6 mb-5" aria-label="Context section">
+        <h2 class="font-bold text-blue-700 mb-1">Context</h2>
+        <p class="text-xs text-gray-400 mb-3">What is the issue we are seeing that motivates this decision? Describe the forces at play—technical, political, social, project constraints.</p>
+        <textarea id="adrContext" rows="5" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none text-sm" placeholder="Describe the technical context, constraints, and drivers for this decision..." aria-label="ADR context"></textarea>
+      </section>
+
+      <!-- Decision Drivers -->
+      <section class="bg-white rounded-2xl shadow-md p-6 mb-5" aria-label="Decision drivers section">
+        <h2 class="font-bold text-blue-700 mb-1">Decision Drivers</h2>
+        <p class="text-xs text-gray-400 mb-3">What are the key concerns, constraints, or quality attributes that must be satisfied?</p>
+        <div id="driversContainer" class="space-y-2"></div>
+        <button id="addDriverBtn" class="mt-3 text-blue-600 border border-blue-300 hover:bg-blue-50 px-4 py-2 rounded-lg text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-blue-400" aria-label="Add decision driver">+ Add Driver</button>
+      </section>
+
+      <!-- Options Considered -->
+      <section class="bg-white rounded-2xl shadow-md p-6 mb-5" aria-label="Options considered section">
+        <h2 class="font-bold text-blue-700 mb-1">Options Considered</h2>
+        <p class="text-xs text-gray-400 mb-3">List the alternatives evaluated, with their pros and cons.</p>
+        <div id="optionsContainer" class="space-y-4"></div>
+        <button id="addOptionBtn" class="mt-3 text-blue-600 border border-blue-300 hover:bg-blue-50 px-4 py-2 rounded-lg text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-blue-400" aria-label="Add option">+ Add Option</button>
+      </section>
+
+      <!-- Decision -->
+      <section class="bg-white rounded-2xl shadow-md p-6 mb-5" aria-label="Decision section">
+        <h2 class="font-bold text-blue-700 mb-1">Decision</h2>
+        <p class="text-xs text-gray-400 mb-3">The change we decided to make. State the decision clearly and the rationale.</p>
+        <textarea id="adrDecision" rows="4" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none text-sm" placeholder="We will use X because... This decision was chosen over alternatives because..." aria-label="ADR decision"></textarea>
+      </section>
+
+      <!-- Consequences -->
+      <section class="bg-white rounded-2xl shadow-md p-6 mb-5" aria-label="Consequences section">
+        <h2 class="font-bold text-blue-700 mb-1">Consequences</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div>
+            <p class="text-xs font-medium text-green-700 mb-2">✅ Positive Consequences</p>
+            <div id="posConseqContainer" class="space-y-2"></div>
+            <button id="addPosBtn" class="mt-2 text-green-700 border border-green-300 hover:bg-green-50 px-3 py-1.5 rounded-lg text-xs font-medium transition focus:outline-none focus:ring-2 focus:ring-green-400" aria-label="Add positive consequence">+ Positive</button>
+          </div>
+          <div>
+            <p class="text-xs font-medium text-red-700 mb-2">⚠️ Negative Consequences / Trade-offs</p>
+            <div id="negConseqContainer" class="space-y-2"></div>
+            <button id="addNegBtn" class="mt-2 text-red-700 border border-red-300 hover:bg-red-50 px-3 py-1.5 rounded-lg text-xs font-medium transition focus:outline-none focus:ring-2 focus:ring-red-400" aria-label="Add negative consequence">+ Negative</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Implementation Notes -->
+      <section class="bg-white rounded-2xl shadow-md p-6 mb-5" aria-label="Implementation notes section">
+        <h2 class="font-bold text-blue-700 mb-1">Implementation Notes</h2>
+        <p class="text-xs text-gray-400 mb-3">Any notes, links, migration steps, or follow-up tasks related to implementing this decision.</p>
+        <textarea id="adrNotes" rows="4" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none text-sm" placeholder="Migration plan, related tickets, documentation links, review schedule..." aria-label="Implementation notes"></textarea>
+      </section>
+    </div>
+
+    <!-- PREVIEW VIEW -->
+    <div id="previewView" class="hidden bg-white rounded-2xl shadow-md p-8 font-mono text-sm fade-in">
+      <pre id="previewContent" class="whitespace-pre-wrap text-gray-800"></pre>
+    </div>
+  </main>
+
+  <script>
+    let driverCount = 0;
+    let optionCount = 0;
+    let posCount = 0;
+    let negCount = 0;
+
+    document.getElementById('adrDate').value = new Date().toISOString().split('T')[0];
+
+    function addDriver(val='') {
+      driverCount++;
+      const div = document.createElement('div');
+      div.className = 'flex items-center gap-2';
+      const span = document.createElement('span'); span.className='text-blue-400 font-bold text-sm w-4'; span.textContent='›';
+      const input = document.createElement('input');
+      input.type='text'; input.value=val;
+      input.className='flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none driver-input';
+      input.placeholder='e.g. Must support 10k concurrent connections';
+      input.setAttribute('aria-label', 'Decision driver ' + driverCount);
+      const rb = document.createElement('button');
+      rb.textContent='✕'; rb.className='text-red-400 hover:text-red-600 font-bold focus:outline-none focus:ring-2 focus:ring-red-400 rounded text-sm';
+      rb.setAttribute('aria-label','Remove driver');
+      rb.addEventListener('click', ()=>div.remove());
+      div.append(span,input,rb);
+      document.getElementById('driversContainer').appendChild(div);
+    }
+
+    function addOption(title='', pros='', cons='') {
+      optionCount++;
+      const id = optionCount;
+      const div = document.createElement('div');
+      div.className='border border-gray-200 rounded-xl p-4 space-y-3';
+      div.setAttribute('role','group');
+      div.setAttribute('aria-label','Option '+id);
+
+      const titleInput = document.createElement('input');
+      titleInput.type='text'; titleInput.value=title;
+      titleInput.className='w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-medium focus:ring-2 focus:ring-blue-400 focus:outline-none option-title';
+      titleInput.placeholder='Option name (e.g. Option A: PostgreSQL)';
+      titleInput.setAttribute('aria-label','Option '+id+' title');
+
+      const prosTA = document.createElement('textarea');
+      prosTA.className='w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none option-pros';
+      prosTA.placeholder='Pros: one per line'; prosTA.rows=2; prosTA.value=pros;
+      prosTA.setAttribute('aria-label','Option '+id+' pros');
+
+      const consTA = document.createElement('textarea');
+      consTA.className='w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none option-cons';
+      consTA.placeholder='Cons: one per line'; consTA.rows=2; consTA.value=cons;
+      consTA.setAttribute('aria-label','Option '+id+' cons');
+
+      const row = document.createElement('div');
+      row.className='grid grid-cols-2 gap-3';
+      const pl = document.createElement('div');
+      const pl2 = document.createElement('p'); pl2.className='text-xs font-semibold text-green-600 mb-1'; pl2.textContent='✅ Pros';
+      pl.append(pl2,prosTA);
+      const cl = document.createElement('div');
+      const cl2 = document.createElement('p'); cl2.className='text-xs font-semibold text-red-600 mb-1'; cl2.textContent='❌ Cons';
+      cl.append(cl2,consTA);
+      row.append(pl,cl);
+
+      const rb = document.createElement('button');
+      rb.textContent='Remove Option'; rb.className='text-xs text-red-400 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 rounded';
+      rb.setAttribute('aria-label','Remove option '+id);
+      rb.addEventListener('click',()=>div.remove());
+
+      div.append(titleInput,row,rb);
+      document.getElementById('optionsContainer').appendChild(div);
+    }
+
+    function addConseq(container, val='', type) {
+      const div = document.createElement('div');
+      div.className='flex items-start gap-2';
+      const span = document.createElement('span');
+      span.className = type==='pos' ? 'text-green-500 mt-2.5' : 'text-red-500 mt-2.5';
+      span.textContent = type==='pos' ? '✓' : '✗';
+      const input = document.createElement('textarea');
+      input.className='flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none';
+      input.rows=2; input.value=val;
+      input.placeholder= type==='pos' ? 'Positive outcome...' : 'Trade-off or risk...';
+      input.setAttribute('aria-label', (type==='pos'?'Positive':'Negative') + ' consequence');
+      input.classList.add(type==='pos' ? 'pos-conseq' : 'neg-conseq');
+      const rb = document.createElement('button');
+      rb.textContent='✕'; rb.className='text-red-400 hover:text-red-600 font-bold mt-2.5 focus:outline-none focus:ring-2 focus:ring-red-400 rounded';
+      rb.setAttribute('aria-label','Remove consequence');
+      rb.addEventListener('click',()=>div.remove());
+      div.append(span,input,rb);
+      document.getElementById(container).appendChild(div);
+    }
+
+    // Seed
+    addDriver('Performance: must handle X requests per second');
+    addDriver('Maintainability: team must be able to operate it with minimal training');
+    addOption('Option A: PostgreSQL', 'ACID compliant\nWell-known by team\nRich ecosystem', 'Vertical scaling limits\nMore ops overhead than NoSQL');
+    addOption('Option B: DynamoDB', 'Serverless, auto-scale\nManaged by AWS', 'Less flexible queries\nVendor lock-in');
+    addConseq('posConseqContainer', 'Existing team expertise reduces onboarding time', 'pos');
+    addConseq('negConseqContainer', 'Higher infrastructure cost compared to managed alternatives', 'neg');
+
+    document.getElementById('addDriverBtn').addEventListener('click',()=>addDriver());
+    document.getElementById('addOptionBtn').addEventListener('click',()=>addOption());
+    document.getElementById('addPosBtn').addEventListener('click',()=>addConseq('posConseqContainer','','pos'));
+    document.getElementById('addNegBtn').addEventListener('click',()=>addConseq('negConseqContainer','','neg'));
+
+    function collectData() {
+      return {
+        adrNumber: document.getElementById('adrNumber').value,
+        adrTitle: document.getElementById('adrTitle').value,
+        adrDate: document.getElementById('adrDate').value,
+        adrStatus: document.getElementById('adrStatus').value,
+        adrDeciders: document.getElementById('adrDeciders').value,
+        adrTags: document.getElementById('adrTags').value,
+        adrSupersedes: document.getElementById('adrSupersedes').value,
+        adrContext: document.getElementById('adrContext').value,
+        adrDecision: document.getElementById('adrDecision').value,
+        adrNotes: document.getElementById('adrNotes').value,
+        drivers: Array.from(document.querySelectorAll('.driver-input')).map(i=>i.value),
+        options: Array.from(document.querySelectorAll('#optionsContainer > div')).map(d=>({
+          title: d.querySelector('.option-title').value,
+          pros: d.querySelector('.option-pros').value,
+          cons: d.querySelector('.option-cons').value,
+        })),
+        posConseq: Array.from(document.querySelectorAll('.pos-conseq')).map(i=>i.value),
+        negConseq: Array.from(document.querySelectorAll('.neg-conseq')).map(i=>i.value),
+      };
+    }
+
+    function buildMarkdown(d) {
+      const statusMap = {draft:'🟡 Draft',proposed:'🔵 Proposed',accepted:'🟢 Accepted',deprecated:'🔴 Deprecated',superseded:'⚫ Superseded'};
+      let md = '';
+      md += '# ' + (d.adrNumber||'ADR') + ': ' + (d.adrTitle||'Untitled') + '\n\n';
+      md += '**Status:** ' + (statusMap[d.adrStatus]||d.adrStatus) + '\n';
+      md += '**Date:** ' + (d.adrDate||'') + '\n';
+      if (d.adrDeciders) md += '**Deciders:** ' + d.adrDeciders + '\n';
+      if (d.adrTags) md += '**Tags:** ' + d.adrTags + '\n';
+      if (d.adrSupersedes) md += '**Supersedes:** ' + d.adrSupersedes + '\n';
+      md += '\n---\n\n';
+      md += '## Context\n\n' + (d.adrContext||'(empty)') + '\n\n';
+      md += '## Decision Drivers\n\n' + (d.drivers||[]).filter(x=>x).map(x=>'- '+x).join('\n') + '\n\n';
+      md += '## Options Considered\n\n';
+      (d.options||[]).forEach((o,i)=>{
+        md += '### Option ' + String.fromCharCode(65+i) + ': ' + (o.title||'Untitled') + '\n';
+        md += '**Pros:**\n' + (o.pros||'').split('\n').filter(x=>x).map(x=>'- '+x).join('\n') + '\n';
+        md += '**Cons:**\n' + (o.cons||'').split('\n').filter(x=>x).map(x=>'- '+x).join('\n') + '\n\n';
+      });
+      md += '## Decision\n\n' + (d.adrDecision||'(empty)') + '\n\n';
+      md += '## Consequences\n\n';
+      md += '**Positive:**\n' + (d.posConseq||[]).filter(x=>x).map(x=>'- ✅ '+x).join('\n') + '\n\n';
+      md += '**Negative / Trade-offs:**\n' + (d.negConseq||[]).filter(x=>x).map(x=>'- ⚠️ '+x).join('\n') + '\n\n';
+      if (d.adrNotes) md += '## Implementation Notes\n\n' + d.adrNotes + '\n\n';
+      return md;
+    }
+
+    document.getElementById('viewPreviewBtn').addEventListener('click', ()=>{
+      const d = collectData();
+      document.getElementById('previewContent').textContent = buildMarkdown(d);
+      document.getElementById('editView').classList.add('hidden');
+      document.getElementById('previewView').classList.remove('hidden');
+    });
+
+    document.getElementById('viewEditBtn').addEventListener('click', ()=>{
+      document.getElementById('previewView').classList.add('hidden');
+      document.getElementById('editView').classList.remove('hidden');
+    });
+
+    document.getElementById('printBtn').addEventListener('click', ()=>{
+      const d = collectData();
+      document.getElementById('previewContent').textContent = buildMarkdown(d);
+      document.getElementById('editView').classList.add('hidden');
+      document.getElementById('previewView').classList.remove('hidden');
+      setTimeout(()=>window.print(), 100);
+    });
+
+    function updateSaveSelect() {
+      const keys = Object.keys(localStorage).filter(k=>k.startsWith('adr_v1_'));
+      const sel = document.getElementById('loadSelect');
+      sel.innerHTML = '<option value="">Select saved ADR...</option>';
+      keys.forEach(k=>{
+        try {
+          const d = JSON.parse(localStorage.getItem(k));
+          const o = document.createElement('option');
+          o.value = k;
+          o.textContent = (d.adrNumber||'ADR') + ': ' + (d.adrTitle||'Untitled') + ' (' + (d.adrDate||'') + ')';
+          sel.appendChild(o);
+        } catch(e) {}
+      });
+    }
+
+    document.getElementById('saveBtn').addEventListener('click', ()=>{
+      const d = collectData();
+      const key = 'adr_v1_' + (d.adrNumber||'untitled').replace(/\s/g,'_');
+      localStorage.setItem(key, JSON.stringify(d));
+      document.getElementById('saveMsg').textContent = '✅ Saved as ' + key;
+      updateSaveSelect();
+    });
+
+    document.getElementById('loadBtn').addEventListener('click', ()=>{
+      const sel = document.getElementById('loadSelect');
+      const key = sel.value;
+      if (!key) { alert('Select an ADR to load.'); return; }
+      const raw = localStorage.getItem(key);
+      if (!raw) return;
+      const d = JSON.parse(raw);
+      ['adrNumber','adrTitle','adrDate','adrStatus','adrDeciders','adrTags','adrSupersedes','adrContext','adrDecision','adrNotes'].forEach(k=>{
+        if (d[k]!==undefined) document.getElementById(k).value = d[k];
+      });
+      document.getElementById('driversContainer').innerHTML = '';
+      driverCount=0;
+      (d.drivers||[]).forEach(v=>addDriver(v));
+      document.getElementById('optionsContainer').innerHTML = '';
+      optionCount=0;
+      (d.options||[]).forEach(o=>addOption(o.title,o.pros,o.cons));
+      document.getElementById('posConseqContainer').innerHTML = '';
+      document.getElementById('negConseqContainer').innerHTML = '';
+      (d.posConseq||[]).forEach(v=>addConseq('posConseqContainer',v,'pos'));
+      (d.negConseq||[]).forEach(v=>addConseq('negConseqContainer',v,'neg'));
+      document.getElementById('saveMsg').textContent = '✅ Loaded';
+    });
+
+    document.getElementById('newBtn').addEventListener('click', ()=>{
+      if (!confirm('Start new ADR?')) return;
+      ['adrNumber','adrTitle','adrDeciders','adrTags','adrSupersedes','adrContext','adrDecision','adrNotes'].forEach(k=>document.getElementById(k).value='');
+      document.getElementById('adrDate').value = new Date().toISOString().split('T')[0];
+      document.getElementById('adrStatus').value='accepted';
+      document.getElementById('driversContainer').innerHTML='';
+      document.getElementById('optionsContainer').innerHTML='';
+      document.getElementById('posConseqContainer').innerHTML='';
+      document.getElementById('negConseqContainer').innerHTML='';
+    });
+
+    updateSaveSelect();
+  </script>
+</body>
+</html>
